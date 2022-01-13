@@ -15,7 +15,10 @@
 
     <body>
 
-    
+        <article class="tile">
+            <input type="text" name="login" placeholder="Votre login..." class="text-field" />
+            <input type="submit" value="Enregistrer" class="btn-filled"/>
+        </article>
 
     </body>
 </html>
