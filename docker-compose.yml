@@ -1,0 +1,19 @@
+version: "2.1"
+services:
+  intra:
+    container_name: intra
+    build:
+      context: .
+      dockerfile: Dockerfile
+    links:
+      - intradb:intradb
+    # restart: always
+  intradb:
+    container_name: intradb
+    image: mariadb
+    environment:
+      - MARIADB_ROOT_PASSWORD=root
+    volumes:
+      - /tmp/db:/var/lib/mysql
+    ports:
+      - 3306:3306
