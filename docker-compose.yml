@@ -15,5 +15,6 @@ services:
       - MARIADB_ROOT_PASSWORD=root
     volumes:
       - /tmp/db:/var/lib/mysql
+      - ./migrations:/config/migrations
     ports:
       - 3306:3306
