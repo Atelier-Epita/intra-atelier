@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"intra/db"
+	"log"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 var schema = `
@@ -17,7 +20,7 @@ CREATE TABLE IF NOT EXISTS user (
 
 CREATE TABLE IF NOT EXISTS account (
     id int not null auto_increment primary key,
-    user_id int not null, 
+    user_id int not null,
     foreign key (user_id) references user(id)
 );`
 
@@ -34,10 +37,10 @@ type Account struct {
 
 func main() {
 	fmt.Println("Entering main...")
-	//err := godotenv.Load()
-	//if err != nil {
-	//	log.Fatal("Error loading .env file")
-	//}
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	db.Connect()
 	fmt.Println("Connected")
 	db.DB.MustExec(schema)

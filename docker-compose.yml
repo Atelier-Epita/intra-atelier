@@ -12,7 +12,7 @@ services:
     container_name: intradb
     image: mariadb
     environment:
-      - MARIADB_ROOT_PASSWORD=root
+      - MARIADB_ROOT_PASSWORD=root # use dockerenv
     volumes:
       - /tmp/db:/var/lib/mysql
       - ./migrations:/config/migrations
