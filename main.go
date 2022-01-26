@@ -9,16 +9,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var schema = `
+var user_table = `
 CREATE TABLE IF NOT EXISTS user (
     id int  not null auto_increment primary key,
     login VARCHAR(255) NOT NULL,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     promotion smallint NOT NULL
-);
+);`
 
-CREATE TABLE IF NOT EXISTS account (
+var account_table = `CREATE TABLE IF NOT EXISTS account (
     id int not null auto_increment primary key,
     user_id int not null,
     foreign key (user_id) references user(id)
@@ -43,7 +43,8 @@ func main() {
 	}
 	db.Connect()
 	fmt.Println("Connected")
-	db.DB.MustExec(schema)
+	db.DB.MustExec(user_table)
+	db.DB.MustExec(account_table)
 	fmt.Println("schema executed")
 	insert_user("joe.mama", 2024)
 	fmt.Println("End")

@@ -14,7 +14,7 @@ services:
     environment:
       - MARIADB_ROOT_PASSWORD=root # use dockerenv
     volumes:
-      - /tmp/db:/var/lib/mysql
+      - ./data:/var/lib/mysql
       - ./migrations:/config/migrations
     ports:
       - 3306:3306
