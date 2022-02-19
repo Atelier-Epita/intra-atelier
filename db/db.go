@@ -13,6 +13,20 @@ var (
 	DB *sqlx.DB
 )
 
+func Init() {
+	if DB == nil {
+		connect(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASS"), "")
+	}
+
+	zap.S().Info("Creating database...")
+	_, err := DB.Exec(`CREATE DATABASE ` + os.Getenv("DB_NAME"))
+	if err != nil {
+		zap.S().Warn(err)
+	}
+
+	connect(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_NAME"))
+}
+
 func Connect() {
 	connect(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_NAME"))
 }
@@ -41,4 +55,16 @@ func Close() {
 		return
 	}
 	zap.S().Info("Closed DB")
+}
+
+func Delete() {
+	if DB == nil {
+		return
+	}
+
+	zap.S().Info("Deleting intranet database...")
+	_, err := DB.Exec("DROP DATABASE " + os.Getenv("DB_NAME"))
+	if err != nil {
+		zap.S().Fatal(err)
+	}
 }

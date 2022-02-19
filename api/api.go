@@ -9,8 +9,14 @@ var router *gin.RouterGroup
 func CreateRouter() *gin.Engine {
 	r := gin.Default()
 	// r.Use(cors())
-	r.GET()
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
 
+	router = r.Group("/")
+	handleUser()
 
-	return nil
+	return r
 }

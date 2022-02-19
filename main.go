@@ -1,12 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"intra/api"
+	"intra/cmd"
 	"intra/db"
-	"log"
-	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 var user_table = `
@@ -36,38 +33,14 @@ type Account struct {
 }
 
 func main() {
-	fmt.Println("Entering main...")
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	cmd.Init()
 	db.Connect()
-	fmt.Println("Connected")
+	defer db.Close()
+
+	var server = api.CreateRouter()
+	server.Run()
+
 	db.DB.MustExec(user_table)
 	db.DB.MustExec(account_table)
-	fmt.Println("schema executed")
-	insert_user("joe.mama", 2024)
-	fmt.Println("End")
 }
 
-func insert_user(login string, promotion uint16) error {
-	substrings := strings.Split(login, ".")
-	if len(substrings) != 2 {
-		fmt.Println("insert_user: Login incorrect")
-		return nil
-	}
-
-	tx := db.DB.MustBegin()
-	tx.MustExec("INSERT INTO user (login, first_name, last_name, promotion) VALUES (?, ?, ?, ?)",
-		login,
-		substrings[0],
-		substrings[1],
-		promotion,
-	)
-
-	if tx.Commit() != nil {
-		return fmt.Errorf("cannot insert user %v, promotion %v", login, promotion)
-	}
-
-	return nil
-}
