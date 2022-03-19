@@ -23,9 +23,9 @@ const (
 
 type Inventory struct {
 	Id
-	Group_id uint64 `json:"groupId" db:"group_id"`
-	Name     string `json:"name" db:"name"`
-	Amount   uint64 `json:"amount" db:"amount"`
+	GroupID uint64 `json:"groupId" db:"group_id"`
+	Name    string `json:"name" db:"name"`
+	Amount  uint64 `json:"amount" db:"amount"`
 }
 
 func getInventories() ([]*Inventory, error) {

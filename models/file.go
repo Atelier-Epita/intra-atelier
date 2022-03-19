@@ -30,14 +30,14 @@ const (
 
 type File struct {
 	Id
-	Permission   uint   `json:"permission" db:"permission"` // 0 is public, 1 is private
-	Owner_id     uint64 `json:"ownerId" db:"owner_id"`
-	Group_id     uint64 `json:"groupId" db:"group_id"`
-	Equipment_id uint64 `json:"equipmentId" db:"equipment_id"`
+	Permission  bool   `json:"permission" db:"permission"` // 0 is public, 1 is private
+	OwnerID     uint64 `json:"ownerId" db:"owner_id""`
+	GroupID     uint64 `json:"groupId" db:"group_id"`
+	EquipmentID uint64 `json:"equipmentId" db:""equipment_id"`
 
 	// file path is ./files/$(file_hash)$(file_name)
-	File_name string   `json:"filename" db:"file_name"`
-	File_hash [32]byte `json:"filehash" db:"file_hash"`
+	File_name string   `json:"filename"`
+	File_hash [32]byte `json:"filehash"`
 }
 
 func getFiles() ([]*File, error) {

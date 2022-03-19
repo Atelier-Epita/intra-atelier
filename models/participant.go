@@ -23,8 +23,8 @@ const (
 
 type Participant struct {
 	Id
-	Event_id uint64 `json:"eventId" db:"event_id"`
-	User_id  uint64 `json:"userId" db:"user_id"`
+	EventID uint64 `json:"eventId" db:"event_id"`
+	UserID  uint64 `json:"userId" db:"user_id"`
 }
 
 func getParticipants() ([]*Participant, error) {
@@ -50,6 +50,6 @@ func (p *Participant) insert() error {
 		return err
 	}
 
-	zap.S().Info("Participant ", p.User_id, " just created for event ", p.Event_id, ".")
+	zap.S().Info("Participant ", p.UserID, " just created for event ", p.EventID, ".")
 	return nil
 }

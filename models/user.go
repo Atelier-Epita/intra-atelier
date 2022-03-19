@@ -26,6 +26,7 @@ type User struct {
 	Email     string `json:"email" db:"email"`
 	FirstName string `json:"firstname" db:"first_name"`
 	LastName  string `json:"lastname" db:"last_name"`
+	// Groups    []Group `json:"groups" gorm:"foreignKey:ID"`
 }
 
 func GetUsers() ([]*User, error) {

@@ -34,7 +34,7 @@ func Connect() {
 func connect(host, user, pass, database string) {
 	var err error
 	//var arg = user + ":" + pass + "@(" + host + ")/" + database + "?charset=utf8mb4,utf8&parseTime=true&loc=Europe%2FParis&time_zone=%27Europe%2FParis%27"
-	var arg = "root:root@(localhost)/intradb"
+	var arg = "root:root@(localhost)/intradb?charset=utf8mb4&parseTime=true"
 	fmt.Println(arg)
 	DB, err = sqlx.Connect("mysql", arg)
 	if err != nil {

@@ -30,6 +30,7 @@ type Event struct {
 	End_date    time.Time `json:"end_date" db:"end_date"`
 	Owner       uint64    `json:"owner" db:"owner"`
 	Image       uint64    `json:"image" db:"image"`
+	// Subscribed  []User    `json:"subscribed"`
 }
 
 func getEvents() ([]*Event, error) {

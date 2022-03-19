@@ -24,6 +24,7 @@ const (
 type Equipment struct {
 	Id
 	Name string `json:"name" db:"name"`
+	// Files []File `json:"files"`
 }
 
 func getEquipments() ([]*Equipment, error) {
