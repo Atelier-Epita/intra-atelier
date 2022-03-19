@@ -18,6 +18,7 @@ func CreateRouter() *gin.Engine {
 
 	router = r.Group("/")
 	handleUser()
+	handleGroup()
 
 	return r
 }

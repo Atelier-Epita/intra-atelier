@@ -1,0 +1,29 @@
+basePath: /
+info:
+  contact: {}
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: L'Atelier Intranet Backend
+  version: "0.1"
+paths:
+  /users:
+    get:
+      responses:
+        "400":
+          description: Bad Request
+        "500":
+          description: Server error
+      summary: Get users
+      tags:
+      - users
+    post:
+      responses:
+        "400":
+          description: Bad Request
+        "500":
+          description: Server error
+      summary: Create user
+      tags:
+      - users
+swagger: "2.0"
