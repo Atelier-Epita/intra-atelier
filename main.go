@@ -1,9 +1,9 @@
 package main
 
 import (
-	"intra/api"
-	"intra/cmd"
-	"intra/db"
+	"github.com/Atelier-Epita/intra-atelier/api"
+	"github.com/Atelier-Epita/intra-atelier/cmd"
+	"github.com/Atelier-Epita/intra-atelier/db"
 )
 
 // @title L'Atelier Intranet Backend

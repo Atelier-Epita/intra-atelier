@@ -1,7 +1,7 @@
 package models
 
 import (
-	"intra/db"
+	"github.com/Atelier-Epita/intra-atelier/db"
 
 	"go.uber.org/zap"
 )
@@ -29,7 +29,7 @@ const (
 )
 
 type File struct {
-	Id
+	Id          uint64 `db:"id"`
 	Permission  bool   `json:"permission" db:"permission"` // 0 is public, 1 is private
 	OwnerID     uint64 `json:"ownerId" db:"owner_id"`
 	GroupID     uint64 `json:"groupId" db:"group_id"`

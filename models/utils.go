@@ -12,6 +12,7 @@ func Commit(tx *sqlx.Tx, err error) {
 			zap.S().Error(err)
 		}
 	} else {
+
 		err = tx.Commit()
 		if err != nil {
 			zap.S().Error(err)

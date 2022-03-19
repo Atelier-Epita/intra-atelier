@@ -1,8 +1,9 @@
 package models
 
 import (
-	"intra/db"
 	"time"
+
+	"github.com/Atelier-Epita/intra-atelier/db"
 
 	"go.uber.org/zap"
 )
@@ -23,7 +24,7 @@ const (
 )
 
 type Event struct {
-	Id
+	Id          uint64    `db:"id"`
 	Title       string    `json:"title" db:"title"`
 	Description string    `json:"description" db:"description"`
 	Start_date  time.Time `json:"start_date" db:"start_date"`

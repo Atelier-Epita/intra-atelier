@@ -1,7 +1,7 @@
 package models
 
 import (
-	"intra/db"
+	"github.com/Atelier-Epita/intra-atelier/db"
 
 	"go.uber.org/zap"
 )
@@ -13,6 +13,13 @@ const (
 		FROM groups;
 	`
 
+	getGroupByNameQuery = `
+		SELECT
+			id, name
+		FROM groups
+		WHERE name = ?;
+	`
+
 	insertGroupQuery = `
 		INSERT INTO groups
 			(name)
@@ -22,7 +29,7 @@ const (
 )
 
 type Group struct {
-	Id
+	Id   uint64 `db:"id"`
 	Name string `json:"name" db:"name"`
 }
 
@@ -36,6 +43,18 @@ func GetGroups() ([]*Group, error) {
 	var groups []*Group
 	err = tx.Select(&groups, getGroupsQuery)
 	return groups, err
+}
+
+func GetGroup(name string) (*Group, error) {
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer Commit(tx, err)
+
+	var group Group
+	err = tx.Get(&group, getGroupByNameQuery, name)
+	return &group, err
 }
 
 func (g *Group) Insert() error {

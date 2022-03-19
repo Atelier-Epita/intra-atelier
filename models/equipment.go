@@ -1,7 +1,7 @@
 package models
 
 import (
-	"intra/db"
+	"github.com/Atelier-Epita/intra-atelier/db"
 
 	"go.uber.org/zap"
 )
@@ -22,7 +22,7 @@ const (
 )
 
 type Equipment struct {
-	Id
+	Id   uint64 `db:"id"`
 	Name string `json:"name" db:"name"`
 	// Files []File `json:"files"`
 }

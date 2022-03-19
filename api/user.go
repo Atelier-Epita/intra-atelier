@@ -1,8 +1,10 @@
 package api
 
 import (
-	"intra/models"
+	"fmt"
 	"net/http"
+
+	"github.com/Atelier-Epita/intra-atelier/models"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -73,53 +75,57 @@ func CreateUserHandler(c *gin.Context) {
 
 func GetUserByEmailHandler(c *gin.Context) {
 	mail := c.Param("email")
-	user, err := models.GetUserByEmail(mail)
+	user, err := models.GetUserByMail(mail)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
 			"message": "User using " + mail + " not found",
 		})
+		return
 	}
-
 	c.JSON(http.StatusOK, user)
 }
 
 func GetUserByNameHandler(c *gin.Context) {
 	name := c.Param("name")
-	user, err := models.GetUserByName(name)
+	user, err := models.GetUserByMail(name)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
 			"message": "User " + name + " not found",
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, user)
 }
 
 func AddGroupToUserHandler(c *gin.Context) {
-	name := c.Param("name")
+	email := c.Param("email")
 	group_name := c.Param("groupName")
-	user, err := models.GetUserByName(name)
+	user, err := models.GetUserByMail(email)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
-			"message": "User " + name + " not found",
+			"message": "User " + email + " not found",
 		})
+		return
 	}
-	group, err := models.GetGroupByName(group_name)
+	group, err := models.GetGroup(group_name)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
-			"message": "Group " + name + " not found",
+			"message": "Group " + email + " not found",
 		})
+		return
 	}
-	err = user.AddGroup(*group)
+	err = user.AddGroup(group)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusConflict, gin.H{
-			"status":  http.StatusNotFound,
-			"message": "Group " + name + " couldnt be inserted",
+			"status":  http.StatusConflict,
+			"message": "Group " + email + " couldnt be inserted",
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, user)
@@ -127,13 +133,22 @@ func AddGroupToUserHandler(c *gin.Context) {
 
 func GetUserGroupsHandler(c *gin.Context) {
 	mail := c.Param("email")
-	user, err := models.GetUserByEmail(mail)
+	user, err := models.GetUserByMail(mail)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
 			"message": "User using " + mail + " not found",
 		})
 	}
+	groups, err := user.GetGroups()
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatusJSON(http.StatusConflict, gin.H{
+			"status":  http.StatusConflict,
+			"message": "Couldn't get groups for user " + user.Email,
+		})
+	} else {
+		c.JSON(http.StatusOK, groups)
+	}
 
-	c.JSON(http.StatusOK, user.Groups)
 }

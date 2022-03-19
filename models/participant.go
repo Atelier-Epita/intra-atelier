@@ -1,7 +1,7 @@
 package models
 
 import (
-	"intra/db"
+	"github.com/Atelier-Epita/intra-atelier/db"
 
 	"go.uber.org/zap"
 )
@@ -22,7 +22,7 @@ const (
 )
 
 type Participant struct {
-	Id
+	Id      uint64 `db:"id"`
 	EventID uint64 `json:"eventId" db:"event_id"`
 	UserID  uint64 `json:"userId" db:"user_id"`
 }

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"intra/db"
+	"github.com/Atelier-Epita/intra-atelier/db"
 
 	"go.uber.org/zap"
 )
@@ -22,7 +22,7 @@ const (
 )
 
 type Inventory struct {
-	Id
+	Id      uint64 `db:"id"`
 	GroupID uint64 `json:"groupId" db:"group_id"`
 	Name    string `json:"name" db:"name"`
 	Amount  uint64 `json:"amount" db:"amount"`
@@ -36,7 +36,7 @@ func GetInventories() ([]*Inventory, error) {
 	defer Commit(tx, err)
 
 	var inventories []*Inventory
-	err = tx.Select(&inventories, getEquipmentsQuery)
+	err = tx.Select(&inventories, getInventoriesQuery)
 	return inventories, err
 }
 
