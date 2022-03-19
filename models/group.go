@@ -26,7 +26,7 @@ type Group struct {
 	Name string `json:"name" db:"name"`
 }
 
-func getGroups() ([]*Group, error) {
+func GetGroups() ([]*Group, error) {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func getGroups() ([]*Group, error) {
 	return groups, err
 }
 
-func (g *Group) insert() error {
+func (g *Group) Insert() error {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return err

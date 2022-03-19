@@ -27,7 +27,7 @@ type Equipment struct {
 	// Files []File `json:"files"`
 }
 
-func getEquipments() ([]*Equipment, error) {
+func GetEquipments() ([]*Equipment, error) {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func getEquipments() ([]*Equipment, error) {
 	return equipments, err
 }
 
-func (e *Equipment) insert() error {
+func (e *Equipment) Insert() error {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return err

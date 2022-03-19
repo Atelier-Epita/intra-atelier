@@ -33,7 +33,7 @@ type Event struct {
 	// Subscribed  []User    `json:"subscribed"`
 }
 
-func getEvents() ([]*Event, error) {
+func GetEvents() ([]*Event, error) {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func getEvents() ([]*Event, error) {
 	return events, err
 }
 
-func (e *Event) insert() error {
+func (e *Event) Insert() error {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return err

@@ -28,7 +28,7 @@ type Inventory struct {
 	Amount  uint64 `json:"amount" db:"amount"`
 }
 
-func getInventories() ([]*Inventory, error) {
+func GetInventories() ([]*Inventory, error) {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func getInventories() ([]*Inventory, error) {
 	return inventories, err
 }
 
-func (i *Inventory) insert() error {
+func (i *Inventory) Insert() error {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return err

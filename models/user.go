@@ -13,6 +13,13 @@ const (
 		FROM users;
 	`
 
+	getUserByEmailQuery = `
+		SELECT
+			id, email, first_name, last_name
+		FROM users
+		WHERE email = ?;
+	`
+
 	insertUserQuery = `
 		INSERT INTO users
 			(email, first_name, last_name)
@@ -43,7 +50,19 @@ func GetUsers() ([]*User, error) {
 	return users, err
 }
 
-func (u *User) insert() error {
+func GetUserByEmail() (*User, error) {
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer Commit(tx, err)
+
+	var u *User
+	err = tx.Select(u, getUserByEmailQuery)
+	return u, err
+}
+
+func (u *User) Insert() error {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return err

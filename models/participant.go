@@ -39,7 +39,7 @@ func getParticipants() ([]*Participant, error) {
 	return participants, err
 }
 
-func (p *Participant) insert() error {
+func (p *Participant) Insert() error {
 	tx, err := db.DB.Beginx()
 	if err != nil {
 		return err

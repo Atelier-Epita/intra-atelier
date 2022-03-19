@@ -61,7 +61,7 @@ func CreateUserHandler(c *gin.Context) {
 			"message": "Invalid user request",
 		})
 	} else {
-		u := models.User{Email: userRequest.Email, FirstName: userRequest.FirstName, LastName: userRequest.LastName, Groups: []models.Group{}}
+		u := models.User{Email: userRequest.Email, FirstName: userRequest.FirstName, LastName: userRequest.LastName}
 		u.Insert()
 
 		c.JSON(http.StatusOK, gin.H{
