@@ -20,33 +20,284 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/users": {
+        "/groups": {
             "get": {
                 "tags": [
-                    "users"
+                    "groups"
                 ],
-                "summary": "Get users",
+                "summary": "Get all groups",
                 "responses": {
-                    "400": {
-                        "description": "Bad Request"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Group"
+                            }
+                        }
                     },
                     "500": {
-                        "description": "Server error"
+                        "description": "Couldn't get groups"
+                    }
+                }
+            }
+        },
+        "/groups/{GroupName}": {
+            "get": {
+                "tags": [
+                    "groups"
+                ],
+                "summary": "Get group by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "GroupName",
+                        "name": "GroupName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Group"
+                        }
+                    },
+                    "400": {
+                        "description": "Group not found"
                     }
                 }
             },
             "post": {
                 "tags": [
+                    "groups"
+                ],
+                "summary": "Create group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "GroupName",
+                        "name": "GroupName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.User"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Couldn't get users"
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
                     "users"
                 ],
                 "summary": "Create user",
+                "parameters": [
+                    {
+                        "description": "UserRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.UserRequest"
+                        }
+                    }
+                ],
                 "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad request"
                     },
                     "500": {
-                        "description": "Server error"
+                        "description": "Couldn't create user"
                     }
+                }
+            }
+        },
+        "/users/{email}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user by mail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            }
+        },
+        "/users/{email}/groups": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user groups by user email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Group"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User Not found"
+                    },
+                    "500": {
+                        "description": "Couldn't get groups"
+                    }
+                }
+            }
+        },
+        "/users/{email}/{GroupName}": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user by mail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User mail",
+                        "name": "UserMail",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "GroupName",
+                        "name": "GroupName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "404": {
+                        "description": "User of group not found"
+                    },
+                    "500": {
+                        "description": "Couldn't add group"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.UserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "firstname",
+                "lastname"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstname": {
+                    "type": "string"
+                },
+                "lastname": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Group": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstname": {
+                    "type": "string"
+                },
+                "lastname": {
+                    "type": "string"
                 }
             }
         }

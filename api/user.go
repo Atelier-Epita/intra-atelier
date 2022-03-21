@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Atelier-Epita/intra-atelier/models"
@@ -14,29 +13,27 @@ func handleUser() {
 	users := router.Group("/users")
 
 	users.GET("", GetUsersHandler)
-	users.GET("/:email", GetUserByEmailHandler)
-	users.GET("/:email/groups", GetUserGroupsHandler)
-
 	users.POST("", CreateUserHandler)
-	users.POST("/:name/:groupName", AddGroupToUserHandler)
+
+	users.GET("/:email", GetUserByEmailHandler)
+
+	users.POST("/:email/:groupName", AddGroupToUserHandler)
+	users.GET("/:email/groups", GetUserGroupsHandler)
 }
 
 // @Summary Get users
 // @Tags users
-// @Sucess 200 "OK"
-// @Failure 400 "Bad Request"
-// @Failure 500 "Server error"
+// @Produce json
+// @Success 200 {array} models.User
+// @Failure 500 "Couldn't get users"
 // @Router /users [GET]
 func GetUsersHandler(c *gin.Context) {
 	zap.S().Info("Getting all users...")
 
 	users, err := models.GetUsers()
 	if err != nil {
-		zap.S().Error(err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "Couldn't get users",
-		})
+		Abort(c, err, http.StatusInternalServerError, "Couldn't get users")
+		return
 	}
 
 	c.JSON(http.StatusOK, users)
@@ -50,105 +47,118 @@ type UserRequest struct {
 
 // @Summary Create user
 // @Tags users
-// @Sucess 200 "OK"
-// @Failure 400 "Bad Request"
-// @Failure 500 "Server error"
+// @Accept json
+// @Param request body UserRequest true "UserRequest"
+// @Success 200 "OK"
+// @Failure 400 "Bad request"
+// @Failure 500 "Couldn't create user"
 // @Router /users [POST]
 func CreateUserHandler(c *gin.Context) {
 	var userRequest UserRequest
 	if err := c.BindJSON(&userRequest); err != nil {
-		zap.S().Error(err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "Invalid user request",
-		})
-	} else {
-		u := models.User{Email: userRequest.Email, FirstName: userRequest.FirstName, LastName: userRequest.LastName}
-		u.Insert()
-
-		c.JSON(http.StatusOK, gin.H{
-			"status":  http.StatusOK,
-			"message": "Successfully created user",
-		})
+		Abort(c, err, http.StatusBadRequest, "Invalid user request")
+		return
 	}
+
+	u := models.User{Email: userRequest.Email, FirstName: userRequest.FirstName, LastName: userRequest.LastName}
+
+	if err := u.Insert(); err != nil {
+		Abort(c, err, http.StatusInternalServerError, "Couldn't create user")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": "Successfully created user",
+	})
 }
 
+// @Summary Get user by mail
+// @Tags users
+// @Produce json
+// @Success 200 {object} models.User
+// @Failure 404 "Not found"
+// @Router /users/{email} [GET]
+// @Param email path string true "email"
 func GetUserByEmailHandler(c *gin.Context) {
 	mail := c.Param("email")
 	user, err := models.GetUserByMail(mail)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"status":  http.StatusNotFound,
-			"message": "User using " + mail + " not found",
-		})
+		Abort(c, err, http.StatusNotFound, "User using "+mail+" not found")
 		return
 	}
+
 	c.JSON(http.StatusOK, user)
 }
 
+// Unused
 func GetUserByNameHandler(c *gin.Context) {
 	name := c.Param("name")
 	user, err := models.GetUserByMail(name)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"status":  http.StatusNotFound,
-			"message": "User " + name + " not found",
-		})
+		Abort(c, err, http.StatusNotFound, "User "+name+" not found")
 		return
 	}
 
 	c.JSON(http.StatusOK, user)
 }
 
+// @Summary Get user by mail
+// @Tags users
+// @Produce json
+// @Success 200 {object} models.User
+// @Failure 404 "User of group not found"
+// @Failure 500 "Couldn't add group"
+// @Router /users/{email}/{GroupName} [POST]
+// @Param UserMail path string true "User mail"
+// @Param GroupName path string true "GroupName"
 func AddGroupToUserHandler(c *gin.Context) {
 	email := c.Param("email")
 	group_name := c.Param("groupName")
 	user, err := models.GetUserByMail(email)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"status":  http.StatusNotFound,
-			"message": "User " + email + " not found",
-		})
+		Abort(c, err, http.StatusNotFound, "User "+email+" not found")
 		return
 	}
+
 	group, err := models.GetGroup(group_name)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"status":  http.StatusNotFound,
-			"message": "Group " + email + " not found",
-		})
-		return
-	}
-	err = user.AddGroup(group)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusConflict, gin.H{
-			"status":  http.StatusConflict,
-			"message": "Group " + email + " couldnt be inserted",
-		})
+		Abort(c, err, http.StatusNotFound, "Group "+group_name+" not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	if err := user.AddGroup(group); err != nil {
+		Abort(c, err, http.StatusInternalServerError, "Group "+group_name+" couldnt be inserted")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": "Successfully added group to user",
+	})
 }
 
+// @Summary Get user groups by user email
+// @Tags users
+// @Produce json
+// @Success 200 {array} models.Group
+// @Failure 404 "User Not found"
+// @Failure 500 "Couldn't get groups"
+// @Router /users/{email}/groups [GET]
+// @Param email path string true "email"
 func GetUserGroupsHandler(c *gin.Context) {
 	mail := c.Param("email")
 	user, err := models.GetUserByMail(mail)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"status":  http.StatusNotFound,
-			"message": "User using " + mail + " not found",
-		})
-	}
-	groups, err := user.GetGroups()
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatusJSON(http.StatusConflict, gin.H{
-			"status":  http.StatusConflict,
-			"message": "Couldn't get groups for user " + user.Email,
-		})
-	} else {
-		c.JSON(http.StatusOK, groups)
+		Abort(c, err, http.StatusNotFound, "User using "+mail+" not found")
+		return
 	}
 
+	groups, err := user.GetGroups()
+	if err != nil {
+		Abort(c, err, http.StatusInternalServerError, "Couldn't get groups for user "+user.Email)
+		return
+	}
+
+	c.JSON(http.StatusOK, groups)
 }

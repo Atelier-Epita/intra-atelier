@@ -1,4 +1,32 @@
 basePath: /
+definitions:
+  api.UserRequest:
+    properties:
+      email:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+    required:
+    - email
+    - firstname
+    - lastname
+    type: object
+  models.Group:
+    properties:
+      name:
+        type: string
+    type: object
+  models.User:
+    properties:
+      email:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+    type: object
 info:
   contact: {}
   license:
@@ -7,23 +35,158 @@ info:
   title: L'Atelier Intranet Backend
   version: "0.1"
 paths:
-  /users:
+  /groups:
     get:
       responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Group'
+            type: array
+        "500":
+          description: Couldn't get groups
+      summary: Get all groups
+      tags:
+      - groups
+  /groups/{GroupName}:
+    get:
+      parameters:
+      - description: GroupName
+        in: path
+        name: GroupName
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Group'
+        "400":
+          description: Group not found
+      summary: Get group by name
+      tags:
+      - groups
+    post:
+      parameters:
+      - description: GroupName
+        in: path
+        name: GroupName
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
         "400":
           description: Bad Request
+      summary: Create group
+      tags:
+      - groups
+  /users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
         "500":
-          description: Server error
+          description: Couldn't get users
       summary: Get users
       tags:
       - users
     post:
+      consumes:
+      - application/json
+      parameters:
+      - description: UserRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserRequest'
       responses:
+        "200":
+          description: OK
         "400":
-          description: Bad Request
+          description: Bad request
         "500":
-          description: Server error
+          description: Couldn't create user
       summary: Create user
+      tags:
+      - users
+  /users/{email}:
+    get:
+      parameters:
+      - description: email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: Not found
+      summary: Get user by mail
+      tags:
+      - users
+  /users/{email}/{GroupName}:
+    post:
+      parameters:
+      - description: User mail
+        in: path
+        name: UserMail
+        required: true
+        type: string
+      - description: GroupName
+        in: path
+        name: GroupName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: User of group not found
+        "500":
+          description: Couldn't add group
+      summary: Get user by mail
+      tags:
+      - users
+  /users/{email}/groups:
+    get:
+      parameters:
+      - description: email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Group'
+            type: array
+        "404":
+          description: User Not found
+        "500":
+          description: Couldn't get groups
+      summary: Get user groups by user email
       tags:
       - users
 swagger: "2.0"
