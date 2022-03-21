@@ -43,16 +43,22 @@ const (
 		INSERT INTO users_group
 			(user_id, group_id)
 		VALUES
-			(?, ?);
+			(:userID, :groupID);
 	`
 )
 
 type User struct {
-	Id        uint64 `db:"id"`
+	Id        uint64 `json:"-" db:"id"`
 	Email     string `json:"email" db:"email"`
 	FirstName string `json:"firstname" db:"first_name"`
 	LastName  string `json:"lastname" db:"last_name"`
-	// Groups    []Group `json:"groups"`
+	// In database: Groups    []Group
+}
+
+type UserGroup struct {
+	Id      uint64 `db:"id"`
+	UserId  uint64 `db:"userID"`
+	GroupId uint64 `db:"groupID"`
 }
 
 func GetUsers() ([]*User, error) {
@@ -116,7 +122,7 @@ func (u *User) AddGroup(group *Group) error {
 	}
 	defer Commit(tx, err)
 
-	_, err = tx.NamedExec(AddGroupQuery, []uint64{u.Id, group.Id})
+	_, err = tx.NamedExec(AddGroupQuery, UserGroup{UserId: u.Id, GroupId: group.Id})
 	if err != nil {
 		return err
 	}

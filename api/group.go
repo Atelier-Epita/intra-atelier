@@ -23,14 +23,11 @@ func GetGroupsHandler(c *gin.Context) {
 
 	groups, err := models.GetGroups()
 	if err != nil {
-		zap.S().Error(err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "Couldn't get groups",
-		})
-	} else {
-		c.JSON(http.StatusOK, groups)
+		Abort(c, err, http.StatusBadRequest, "Couldn't get groups")
+		return
 	}
+
+	c.JSON(http.StatusOK, groups)
 }
 
 // @Summary Create group
@@ -41,7 +38,10 @@ func GetGroupsHandler(c *gin.Context) {
 // @Router /users [POST]
 func CreateGroupHandler(c *gin.Context) {
 	g := models.Group{Name: c.Param("name")}
-	g.Insert()
+	if err := g.Insert(); err != nil {
+		Abort(c, err, http.StatusInternalServerError, "Couldn't create group")
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
@@ -53,12 +53,9 @@ func GetGroupByNameHandler(c *gin.Context) {
 	name := c.Param("name")
 	group, err := models.GetGroup(name)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"status":  http.StatusNotFound,
-			"message": "Group " + name + " not found",
-		})
-	} else {
-		c.JSON(http.StatusOK, group)
+		Abort(c, err, http.StatusInternalServerError, "Group "+name+" not found")
+		return
 	}
 
+	c.JSON(http.StatusOK, group)
 }

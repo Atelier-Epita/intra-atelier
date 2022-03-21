@@ -29,7 +29,7 @@ const (
 )
 
 type Group struct {
-	Id   uint64 `db:"id"`
+	Id   uint64 `json:"-" db:"id"`
 	Name string `json:"name" db:"name"`
 }
 
