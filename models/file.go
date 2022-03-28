@@ -3,7 +3,6 @@ package models
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"os"
 
 	"github.com/Atelier-Epita/intra-atelier/db"
@@ -38,6 +37,13 @@ const (
 		FROM files
 		WHERE id = ?;
 	`
+
+	getFileByHashQuery = `
+		SELECT
+			id, permission, owner_id, group_id, equipment_id, file_name, file_hash
+		FROM files
+		WHERE file_hash = ?;
+	`
 )
 
 type File struct {
@@ -65,10 +71,10 @@ func GetFiles() ([]*File, error) {
 	return files, err
 }
 
-func CreateFile(file File, fileContent []byte) error {
+func CreateFile(file File, fileContent []byte) (uint64, error) {
 	tx, err := db.DB.Beginx()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer Commit(tx, err)
 
@@ -78,23 +84,22 @@ func CreateFile(file File, fileContent []byte) error {
 	file.Filehash = sha
 
 	filename := "./files/" + hex.EncodeToString(sha)
-	if _, err = os.Stat(filename); err == nil { // file already exist
-		return nil
-	} else if errors.Is(err, os.ErrNotExist) { // file do not exist
-		_, err = tx.NamedExec(insertFileQuery, file)
-		if err != nil {
-			return err
-		}
-
-		err = os.WriteFile(filename, fileContent, 0444)
-		if err != nil {
-			return err
-		}
-
-		zap.S().Info("File ", file.Filename, " just created.")
-		return nil
+	tmp, err := GetFileByHash(sha)
+	if err == nil { // file found
+		return tmp.Id, err
 	}
-	return err
+	_, err = tx.NamedExec(insertFileQuery, file)
+	if err != nil {
+		return 0, err
+	}
+
+	err = os.WriteFile(filename, fileContent, 0444)
+	if err != nil {
+		return 0, err
+	}
+
+	zap.S().Info("File ", file.Filename, " just created.")
+	return file.Id, nil
 }
 
 func (e *Equipment) GetFilesByEquipment() ([]*File, error) {
@@ -118,5 +123,17 @@ func GetFileById(id uint64) (*File, error) {
 
 	var file File
 	err = tx.Get(&file, getFileByIdQuery, id)
+	return &file, err
+}
+
+func GetFileByHash(hash []byte) (*File, error) {
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer Commit(tx, err)
+
+	var file File
+	err = tx.Get(&file, getFileByHashQuery, hash)
 	return &file, err
 }

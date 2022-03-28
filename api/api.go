@@ -39,6 +39,7 @@ func CreateRouter() *gin.Engine {
 	handleUser()
 	handleGroup()
 	handleFile()
+	handleEvent()
 
 	return r
 }

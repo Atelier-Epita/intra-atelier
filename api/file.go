@@ -14,7 +14,7 @@ import (
 func handleFile() {
 	files := router.Group("/files")
 
-	files.GET("/:id", GetFileById)
+	files.GET("/:id", GetFileByIdHandler)
 	files.POST("/:email/:filename", CreateFileHandler)
 }
 
@@ -26,7 +26,7 @@ func handleFile() {
 // @Failure 500 "Couldn't get file"
 // @Router /files/{id} [GET]
 // @Param id path string true "File id"
-func GetFileById(c *gin.Context) {
+func GetFileByIdHandler(c *gin.Context) {
 	id_str := c.Param("id")
 	id, err := strconv.ParseUint(id_str, 10, 64)
 	if err != nil {
@@ -50,7 +50,7 @@ func GetFileById(c *gin.Context) {
 // @Summary Create file
 // @Tags files
 // @Produce json
-// @Success 200 "OK"
+// @Success 200 "OK with hash of file"
 // @Failure 400 "Invalid filename or couldn't read file request"
 // @Failure 404 "User not found"
 // @Failure 500 "Couldn't create file"
@@ -91,7 +91,8 @@ func CreateFileHandler(c *gin.Context) {
 	}
 
 	var f = models.File{Permission: 0, OwnerID: u.Id, Filename: filename}
-	if err := models.CreateFile(f, fileContent); err != nil {
+	id, err := models.CreateFile(f, fileContent)
+	if err != nil {
 		Abort(c, err, http.StatusInternalServerError, "Couldn't create file")
 		return
 	}
@@ -99,5 +100,6 @@ func CreateFileHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
 		"message": "Successfully created file",
+		"id":      id,
 	})
 }
