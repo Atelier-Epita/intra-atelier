@@ -32,6 +32,14 @@ const (
   			users.id = ?;
 	`
 
+	getUserFilesQuery = `
+		SELECT
+			id, permission, owner_id, group_id, equipment_id, file_name, file_hash
+		FROM files
+		JOIN users ON users.id = files.owner_id
+		WHERE users.id = ?;
+	`
+
 	insertUserQuery = `
 		INSERT INTO users
 			(email, first_name, last_name)
@@ -129,4 +137,16 @@ func (u *User) AddGroup(group *Group) error {
 	zap.S().Info("Binded group ", group.Name, " to user ", u.Email, ".")
 
 	return nil
+}
+
+func GetUserFiles(email string) ([]*File, error) {
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer Commit(tx, err)
+
+	var files []*File
+	err = tx.Select(&files, getUserFilesQuery)
+	return files, err
 }

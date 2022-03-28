@@ -103,15 +103,15 @@ func GetUserByNameHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// @Summary Get user by mail
+// @Summary Add Group to user
 // @Tags users
 // @Produce json
-// @Success 200 {object} models.User
+// @Success 200 "OK"
 // @Failure 404 "User of group not found"
 // @Failure 500 "Couldn't add group"
 // @Router /users/{email}/{GroupName} [POST]
-// @Param UserMail path string true "User mail"
-// @Param GroupName path string true "GroupName"
+// @Param email path string true "User mail"
+// @Param groupName path string true "GroupName"
 func AddGroupToUserHandler(c *gin.Context) {
 	email := c.Param("email")
 	group_name := c.Param("groupName")

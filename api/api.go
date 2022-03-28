@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 
 	// GoSwagger
@@ -14,6 +15,7 @@ import (
 const version = "v0.1"
 
 var router *gin.RouterGroup
+var auth *jwt.GinJWTMiddleware
 
 func CreateRouter() *gin.Engine {
 	r := gin.Default()
@@ -26,15 +28,17 @@ func CreateRouter() *gin.Engine {
 		c.Redirect(http.StatusPermanentRedirect, "/swagger/index.html")
 	})
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
 	router = r.Group("/" + version)
+	// JWT
+	// auth = AuthMiddleware()
+
+	// handleAuth()
+
+	// router.Use(auth.MiddlewareFunc())
+
 	handleUser()
 	handleGroup()
+	handleFile()
 
 	return r
 }
