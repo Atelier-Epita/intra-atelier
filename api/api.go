@@ -3,7 +3,6 @@ package api
 import (
 	"net/http"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 
 	// GoSwagger
@@ -15,7 +14,6 @@ import (
 const version = "v0.1"
 
 var router *gin.RouterGroup
-var auth *jwt.GinJWTMiddleware
 
 func CreateRouter() *gin.Engine {
 	r := gin.Default()
@@ -29,12 +27,12 @@ func CreateRouter() *gin.Engine {
 	})
 
 	router = r.Group("/" + version)
-	// JWT
-	// auth = AuthMiddleware()
 
-	// handleAuth()
+	handleAuth()
 
-	// router.Use(auth.MiddlewareFunc())
+	// cookies
+	initSecureCookies()
+	router.Use(SessionMiddleware())
 
 	handleUser()
 	handleGroup()

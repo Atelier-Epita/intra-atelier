@@ -3,10 +3,11 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 
-	jwt "github.com/appleboy/gin-jwt"
+	"github.com/Atelier-Epita/intra-atelier/models"
 	"github.com/aureleoules/epitaf/lib/microsoft"
-	"github.com/aureleoules/epitaf/models"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -15,13 +16,13 @@ func handleAuth() {
 	users := router.Group("/users")
 
 	users.GET("/authenticate", authenticateHandler)
-	users.GET("/callback", auth.LoginHandler)
+	users.GET("/callback", callbackHandler)
 }
 
 // @Summary Authenticate URL
 // @Tags auth
 // @Description Build Microsoft oauth url
-// @Param   redirect_uri	body	string	true	"redirect_uri"  default(http://localhost:8080/callback)
+// @Param   redirect_uri	body	string	true	"redirect_uri"  default(http://localhost:8080/v0.1/users/callback)
 // @Success 200	"OK"
 // @Failure 406	"Not acceptable"
 // @Router /users/authenticate [POST]
@@ -30,7 +31,7 @@ func authenticateHandler(c *gin.Context) {
 }
 
 // @Summary OAuth Callback
-// @Description Authenticate user and return JWT
+// @Description Authenticate user
 // @Tags auth
 // @Param   code	body	string	true	"code"
 // @Param   redirect_uri	body	string	true	"redirect_uri"
@@ -42,14 +43,15 @@ func authenticateHandler(c *gin.Context) {
 // @Failure 406	"Not acceptable"
 // @Failure 500 "Server error"
 // @Router /users/callback [GET]
-func callbackHandler(c *gin.Context) (interface{}, error) {
+func callbackHandler(c *gin.Context) {
 	var code = c.Request.URL.Query().Get("code")
 	var redirect_uri = "http://localhost:8080/v0.1/users/callback"
 	fmt.Printf(code, redirect_uri)
 
 	token, err := microsoft.GetAccessToken(code, redirect_uri)
 	if err != nil {
-		return nil, err
+		Abort(c, err, http.StatusInternalServerError, "Couldn't authenticate")
+		return
 	}
 
 	client := microsoft.NewClient(token, nil)
@@ -57,29 +59,70 @@ func callbackHandler(c *gin.Context) (interface{}, error) {
 	profile, err := client.GetProfile()
 	if err != nil {
 		zap.S().Error(err)
-		return nil, jwt.ErrFailedAuthentication
+		Abort(c, err, http.StatusInternalServerError, "Couldn't authenticate")
+		return
 	}
 
 	// Check if user exists in database
-	u, err := models.GetUserByEmail(profile.Mail)
+	u, err := models.GetUserByMail(profile.Mail)
 	if err != nil {
-		// If the user does not exists, we must create a new one using the CRI.
-		user, err := models.PrepareUser(profile.Mail)
-		if err != nil {
-			zap.S().Error(err)
-			return nil, err
+		user := models.User{
+			Email:     profile.Mail,
+			FirstName: profile.FirstName,
+			LastName:  profile.LastName,
 		}
 
-		// Insert new user and return user data
+		// Insert new user and login
 		err = user.Insert()
 		if err != nil {
 			zap.S().Error(err)
-			return nil, jwt.ErrFailedAuthentication
+			Abort(c, err, http.StatusInternalServerError, "Couldn't authenticate")
+			return
 		}
 
-		return &user, nil
+		onLogin(c, &user)
 	}
 
-	// User already exists, return user data
-	return u, nil
+	// User already exists, login
+	onLogin(c, u)
+}
+
+// Attach cookie to user
+func onLogin(c *gin.Context, u *models.User) {
+	cookieName := os.Getenv("COOKIE_NAME")
+	cookieExpiration, err := strconv.Atoi(os.Getenv("COOKIE_EXPIRATION"))
+	if err != nil {
+		zap.S().Error(err)
+		Abort(c, err, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	cookieSecure, err := strconv.ParseBool(os.Getenv("COOKIE_SECURE"))
+	if err != nil {
+		zap.S().Error(err)
+		Abort(c, err, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	encoded, err := SC.Encode(cookieName, u.Email)
+	if err != nil {
+		zap.S().Error(err)
+		Abort(c, err, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.SetCookie(
+		cookieName,
+		encoded,
+		cookieExpiration,
+		os.Getenv("COOKIE_DOMAIN"),
+		"/",
+		cookieSecure,
+		true,
+	)
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": "Successfully login",
+	})
 }
